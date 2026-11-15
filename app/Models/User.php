@@ -22,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_superadmin',
+        'is_active',
     ];
 
     /**
@@ -44,6 +46,36 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_superadmin' => 'boolean',
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function canAccessApplication(string $application): bool
+    {
+        return $this->is_superadmin || $this->applicationAccess()->where('application_slug', $application)->exists();
+    }
+
+    public function canUseFeature(string $application, string $feature): bool
+    {
+        return $this->is_superadmin || (
+            $this->canAccessApplication($application)
+            && $this->featureAccess()->where('application_slug', $application)->where('feature_slug', $feature)->exists()
+        );
+    }
+
+    public function applicationAccess()
+    {
+        return $this->hasMany(UserApplicationAccess::class);
+    }
+
+    public function featureAccess()
+    {
+        return $this->hasMany(UserFeatureAccess::class);
+    }
+
+    public function shoppingLists()
+    {
+        return $this->hasMany(ShoppingList::class);
     }
 }
