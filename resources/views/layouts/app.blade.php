@@ -33,5 +33,37 @@
         @yield('content')
     </main>
     <footer class="site-footer"><span>Ruang Alat</span><span>Portal aplikasi pribadi</span></footer>
+    <div class="page-loader" id="page-loader" aria-hidden="true"><div class="page-loader-text">ruang<span>alat</span></div></div>
+    <script>
+        (function () {
+            var loader = document.getElementById('page-loader');
+            var shownAt = 0;
+            var show = function () {
+                shownAt = Date.now();
+                loader.setAttribute('aria-hidden', 'false');
+                loader.classList.add('is-active');
+            };
+            var hide = function () {
+                var remaining = Math.max(0, 350 - (Date.now() - shownAt));
+                setTimeout(function () {
+                    loader.classList.remove('is-active');
+                    loader.setAttribute('aria-hidden', 'true');
+                }, remaining);
+            };
+            window.addEventListener('pageshow', hide);
+            document.addEventListener('click', function (e) {
+                var a = e.target.closest && e.target.closest('a[href]');
+                if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                if (a.target && a.target !== '_self' || a.hasAttribute('download')) return;
+                var url = new URL(a.href, location.href);
+                if (url.origin !== location.origin || url.protocol.indexOf('http') !== 0) return;
+                if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
+                show();
+            });
+            document.addEventListener('submit', function (e) {
+                if (!e.defaultPrevented) setTimeout(function () { if (!e.defaultPrevented) show(); }, 0);
+            });
+        })();
+    </script>
 </body>
 </html>
