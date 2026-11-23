@@ -44,7 +44,7 @@
                 loader.classList.add('is-active');
             };
             var hide = function () {
-                var remaining = Math.max(0, 350 - (Date.now() - shownAt));
+                var remaining = Math.max(0, 2000 - (Date.now() - shownAt));
                 setTimeout(function () {
                     loader.classList.remove('is-active');
                     loader.setAttribute('aria-hidden', 'true');
