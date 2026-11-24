@@ -2,8 +2,16 @@
 
 @section('content')
 <section class="hero hero-dashboard">
-    <div><div class="eyebrow">Ruang kerja digitalmu</div><h1>Halo, {{ Str::before(auth()->user()->name, ' ') }}.</h1><p class="muted">Pilih aplikasi untuk mulai. Akses yang tampil disesuaikan untuk akunmu.</p></div>
-    <div class="hero-orbit" aria-hidden="true"><span>ra</span><i>✦</i></div>
+    <div><div class="eyebrow">Portal untuk semua aktivitasmu</div><h1>Halo, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+        <p class="muted">
+            @if(auth()->user()->is_superadmin)
+                Pilih aplikasi untuk mulai. Akses yang tampil disesuaikan untuk akunmu.
+            @else
+                Selamat datang di <strong>ATARA</strong>, selamat menikmati layanan digital kami.
+            @endif
+        </p>
+    </div>
+    <div class="hero-orbit" aria-hidden="true"><img src="{{ asset('branding/atara-logo.svg') }}" alt=""></div>
 </section>
 
 @if(auth()->user()->is_superadmin)

@@ -4,12 +4,16 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Apps\DiscountController;
 use App\Http\Controllers\Apps\ElectricityController;
 use App\Http\Controllers\Apps\FuelController;
+use App\Http\Controllers\Apps\HunianController;
+use App\Http\Controllers\Apps\HunianLogController;
+use App\Http\Controllers\Apps\HunianMasterController;
+use App\Http\Controllers\Apps\HunianResidentController;
 use App\Http\Controllers\Apps\ShoppingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PortalController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : redirect()->route('login'));
+Route::get('/', fn() => auth()->check() ? redirect()->route('dashboard') : redirect()->route('login'));
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -54,5 +58,30 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/items/{item}', [ShoppingController::class, 'deleteItem'])->middleware('feature:shopping,checklist')->name('.items.destroy');
         Route::post('/lists', [ShoppingController::class, 'createList'])->middleware('feature:shopping,multiple_lists')->name('.lists.store');
         Route::delete('/lists/{list}', [ShoppingController::class, 'deleteList'])->middleware('feature:shopping,multiple_lists')->name('.lists.destroy');
+    });
+
+    Route::prefix('apps/hunian')->name('apps.hunian')->middleware(['superadmin', 'application:hunian'])->group(function () {
+        Route::get('/', [HunianController::class, 'index'])->name('');
+
+        // Monitoring & pergantian penghuni
+        Route::post('/rooms/{room}/occupancies', [HunianController::class, 'occupy'])->name('.rooms.occupy');
+        Route::put('/occupancies/{occupancy}', [HunianController::class, 'updateOccupancy'])->name('.occupancies.update');
+        Route::post('/occupancies/{occupancy}/payments', [HunianController::class, 'pay'])->name('.occupancies.pay');
+        Route::patch('/occupancies/{occupancy}/end', [HunianController::class, 'end'])->name('.occupancies.end');
+        Route::post('/rooms/{room}/maintenance', [HunianController::class, 'startMaintenance'])->name('.rooms.maintenance.start');
+        Route::patch('/maintenance/{maintenance}/finish', [HunianController::class, 'finishMaintenance'])->name('.maintenance.finish');
+
+        // Master kamar & fasilitas
+        Route::get('/master', [HunianMasterController::class, 'index'])->name('.master');
+        Route::post('/master/rooms', [HunianMasterController::class, 'storeRoom'])->name('.master.rooms.store');
+        Route::put('/master/rooms/{room}', [HunianMasterController::class, 'updateRoom'])->name('.master.rooms.update');
+        Route::delete('/master/rooms/{room}', [HunianMasterController::class, 'destroyRoom'])->name('.master.rooms.destroy');
+        Route::post('/master/facilities', [HunianMasterController::class, 'storeFacility'])->name('.master.facilities.store');
+        Route::put('/master/facilities/{facility}', [HunianMasterController::class, 'updateFacility'])->name('.master.facilities.update');
+        Route::delete('/master/facilities/{facility}', [HunianMasterController::class, 'destroyFacility'])->name('.master.facilities.destroy');
+
+        // Log aktivitas
+        Route::get('/residents', [HunianResidentController::class, 'index'])->name('.residents');
+        Route::get('/logs', [HunianLogController::class, 'index'])->name('.logs');
     });
 });

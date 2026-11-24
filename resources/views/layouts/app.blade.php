@@ -35,19 +35,23 @@
         @yield('content')
     </main>
     <footer class="site-footer"><span>ATARA</span><span>Portal aplikasi pribadi</span></footer>
-    <div class="page-loader" id="page-loader" aria-hidden="true"><div class="page-loader-text">ATARA</div></div>
+    <div class="page-loader" id="page-loader" aria-hidden="true"><div class="page-loader-text"><img src="{{ asset('branding/atara-mark.svg') }}" alt=""></div></div>
     <script>
         (function () {
             var loader = document.getElementById('page-loader');
-            var MIN_DURATION = 1000;
-            var busy = false;
+            var SHOW_DELAY = 300;
+            var timer = null;
+            var submitting = false;
             var show = function () {
-                busy = true;
-                loader.setAttribute('aria-hidden', 'false');
-                loader.classList.add('is-active');
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    loader.setAttribute('aria-hidden', 'false');
+                    loader.classList.add('is-active');
+                }, SHOW_DELAY);
             };
             var hide = function () {
-                busy = false;
+                clearTimeout(timer);
+                submitting = false;
                 loader.classList.remove('is-active');
                 loader.setAttribute('aria-hidden', 'true');
             };
@@ -59,28 +63,14 @@
                 var url = new URL(a.href, location.href);
                 if (url.origin !== location.origin || url.protocol.indexOf('http') !== 0) return;
                 if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
-                if (busy) { e.preventDefault(); return; }
-                e.preventDefault();
                 show();
-                setTimeout(function () { location.href = a.href; }, MIN_DURATION);
             });
             document.addEventListener('submit', function (e) {
                 var form = e.target;
-                if (e.defaultPrevented || form.dataset.loaderDone) return;
-                if (busy) { e.preventDefault(); return; }
-                e.preventDefault();
+                if (e.defaultPrevented) return;
+                if (submitting) { e.preventDefault(); return; }
+                submitting = true;
                 show();
-                if (e.submitter && e.submitter.name) {
-                    var hidden = document.createElement('input');
-                    hidden.type = 'hidden';
-                    hidden.name = e.submitter.name;
-                    hidden.value = e.submitter.value;
-                    form.appendChild(hidden);
-                }
-                setTimeout(function () {
-                    form.dataset.loaderDone = '1';
-                    HTMLFormElement.prototype.submit.call(form);
-                }, MIN_DURATION);
             });
         })();
     </script>

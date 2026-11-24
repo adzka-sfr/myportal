@@ -42,5 +42,13 @@ return [
                 'compare_vehicles' => ['name' => 'Bandingkan kendaraan', 'description' => 'Bandingkan biaya dua kendaraan untuk rute yang sama.'],
             ],
         ],
+        'hunian' => [
+            'name' => 'Kelola Hunian',
+            'description' => 'Pantau kondisi setiap kamar, penghuni, dan masa sewa secara visual.',
+            'icon' => '⌂',
+            'route' => 'apps.hunian',
+            'superadmin_only' => true,
+            'features' => [],
+        ],
     ],
 ];
