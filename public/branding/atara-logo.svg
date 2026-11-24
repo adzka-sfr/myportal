@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250" role="img" aria-labelledby="title">
+<title id="title">ATARA</title>
+<g transform="translate(282 4) scale(.30)">
+<path fill="#3A0B08" fill-rule="evenodd" d="M0 153 260 0l260 153v177h-55V194H295v136h-70V194H55v136H0z M120 145 260 63l140 82z"/>
+</g>
+<text x="360" y="172" text-anchor="middle" fill="#3A0B08" font-family="Manrope,Arial,sans-serif" font-size="62" font-weight="600" letter-spacing="18">ATARA</text>
+<path d="M182 209h108M430 209h108" stroke="#A65A3A" stroke-width="3"/>
+<text x="360" y="218" text-anchor="middle" fill="#A65A3A" font-family="DM Sans,Arial,sans-serif" font-size="17" font-weight="600" letter-spacing="8">PORTAL</text>
+</svg>

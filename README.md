@@ -1,6 +1,6 @@
-# Ruang Alat
+# ATARA
 
-Portal aplikasi berbasis Laravel 12 dengan satu kali login, akses per pengguna, dan fitur yang dapat dibatasi oleh Superadmin.
+Portal aplikasi ATARA berbasis Laravel 12 dengan satu kali login, akses per pengguna, dan fitur yang dapat dibatasi oleh Superadmin.
 
 ## Isi portal
 

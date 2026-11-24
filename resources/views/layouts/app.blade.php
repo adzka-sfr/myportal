@@ -4,12 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Ruang Alat' }} · Ruang Alat</title>
+    <title>{{ $title ?? 'ATARA' }} · ATARA</title>
+    <meta name="theme-color" content="#3A0B08">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('branding/atara-mark.svg') }}">
     <link rel="stylesheet" href="{{ asset('css/portal.css') }}">
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="{{ auth()->check() ? route('dashboard') : route('login') }}"><span class="brand-mark">ra</span><span>ruang<span class="brand-light">alat</span></span></a>
+        <a class="brand" href="{{ auth()->check() ? route('dashboard') : route('login') }}" aria-label="ATARA beranda"><img class="brand-mark" src="{{ asset('branding/atara-mark.svg') }}" alt=""><span>ATARA</span></a>
         @auth
             <nav class="topnav" aria-label="Navigasi utama">
                 <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])>Portal</a>
@@ -32,23 +34,22 @@
         @endif
         @yield('content')
     </main>
-    <footer class="site-footer"><span>Ruang Alat</span><span>Portal aplikasi pribadi</span></footer>
-    <div class="page-loader" id="page-loader" aria-hidden="true"><div class="page-loader-text">ruang<span>alat</span></div></div>
+    <footer class="site-footer"><span>ATARA</span><span>Portal aplikasi pribadi</span></footer>
+    <div class="page-loader" id="page-loader" aria-hidden="true"><div class="page-loader-text">ATARA</div></div>
     <script>
         (function () {
             var loader = document.getElementById('page-loader');
-            var shownAt = 0;
+            var MIN_DURATION = 1000;
+            var busy = false;
             var show = function () {
-                shownAt = Date.now();
+                busy = true;
                 loader.setAttribute('aria-hidden', 'false');
                 loader.classList.add('is-active');
             };
             var hide = function () {
-                var remaining = Math.max(0, 2000 - (Date.now() - shownAt));
-                setTimeout(function () {
-                    loader.classList.remove('is-active');
-                    loader.setAttribute('aria-hidden', 'true');
-                }, remaining);
+                busy = false;
+                loader.classList.remove('is-active');
+                loader.setAttribute('aria-hidden', 'true');
             };
             window.addEventListener('pageshow', hide);
             document.addEventListener('click', function (e) {
@@ -58,10 +59,28 @@
                 var url = new URL(a.href, location.href);
                 if (url.origin !== location.origin || url.protocol.indexOf('http') !== 0) return;
                 if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
+                if (busy) { e.preventDefault(); return; }
+                e.preventDefault();
                 show();
+                setTimeout(function () { location.href = a.href; }, MIN_DURATION);
             });
             document.addEventListener('submit', function (e) {
-                if (!e.defaultPrevented) setTimeout(function () { if (!e.defaultPrevented) show(); }, 0);
+                var form = e.target;
+                if (e.defaultPrevented || form.dataset.loaderDone) return;
+                if (busy) { e.preventDefault(); return; }
+                e.preventDefault();
+                show();
+                if (e.submitter && e.submitter.name) {
+                    var hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = e.submitter.name;
+                    hidden.value = e.submitter.value;
+                    form.appendChild(hidden);
+                }
+                setTimeout(function () {
+                    form.dataset.loaderDone = '1';
+                    HTMLFormElement.prototype.submit.call(form);
+                }, MIN_DURATION);
             });
         })();
     </script>
