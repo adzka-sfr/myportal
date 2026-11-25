@@ -9,6 +9,7 @@ class HunianOccupancy extends Model
 {
     protected $fillable = [
         'room_id',
+        'tenant_id',
         'status',
         'occupant_name',
         'occupant_phone',
@@ -32,6 +33,11 @@ class HunianOccupancy extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(HunianRoom::class, 'room_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(HunianTenant::class, 'tenant_id');
     }
 
     /** Selisih hari ke jatuh tempo (negatif = terlambat), null bila belum ada tanggal. */

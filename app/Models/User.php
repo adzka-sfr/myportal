@@ -78,4 +78,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ShoppingList::class);
     }
+
+    public function hunianTenant()
+    {
+        return $this->hasOne(HunianTenant::class);
+    }
 }

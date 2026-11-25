@@ -12,8 +12,11 @@ class PortalController extends Controller
         $user = Auth::user();
         $applications = collect(config('portal.applications'))
             ->map(fn(array $application, string $slug) => $application + ['slug' => $slug])
-            ->filter(fn(array $application) => ! ($application['superadmin_only'] ?? false) || $user->is_superadmin)
-            ->filter(fn(array $application) => $user->canAccessApplication($application['slug']));
+            ->filter(fn(array $application) => match (true) {
+                $application['superadmin_only'] ?? false => (bool) $user->is_superadmin,
+                $application['resident_only'] ?? false => $user->hunianTenant?->is_active === true,
+                default => $user->canAccessApplication($application['slug']),
+            });
 
         return view('portal.dashboard', compact('applications'));
     }

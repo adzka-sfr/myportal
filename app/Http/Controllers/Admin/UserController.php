@@ -98,7 +98,7 @@ class UserController extends Controller
     private function validated(Request $request, bool $creating, ?User $user = null): array
     {
         $passwordRules = $creating ? ['required', 'string', 'min:12', 'confirmed'] : ['nullable', 'string', 'min:12', 'confirmed'];
-        $apps = array_filter(config('portal.applications'), fn(array $app) => ! ($app['superadmin_only'] ?? false));
+        $apps = array_filter(config('portal.applications'), fn(array $app) => ! ($app['superadmin_only'] ?? false) && ! ($app['resident_only'] ?? false));
         $featureRules = [];
         foreach ($apps as $app => $definition) {
             foreach (array_keys($definition['features']) as $feature) {

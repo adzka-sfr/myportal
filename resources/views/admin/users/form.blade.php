@@ -13,7 +13,7 @@
 
     <section class="panel form-panel"><div class="panel-heading"><div><h2>Akses aplikasi & fitur</h2><p>Centang aplikasinya, lalu pilih fitur yang boleh digunakan di dalamnya.</p></div><span class="step-number">02</span></div>
         <div class="permission-list">
-            @foreach(collect(config('portal.applications'))->reject(fn ($app) => $app['superadmin_only'] ?? false) as $app => $definition)
+            @foreach(collect(config('portal.applications'))->reject(fn ($app) => ($app['superadmin_only'] ?? false) || ($app['resident_only'] ?? false)) as $app => $definition)
                 <article class="permission-app"><label class="permission-app-head"><input type="checkbox" name="applications[]" value="{{ $app }}" @checked(in_array($app, old('applications', $applicationAccess), true))><span class="app-icon app-icon-{{ $app }}">{{ $definition['icon'] }}</span><span><strong>{{ $definition['name'] }}</strong><small>{{ $definition['description'] }}</small></span></label>
                     <div class="permission-features">@foreach($definition['features'] as $feature => $featureDefinition)<label class="permission-feature"><input type="checkbox" name="features[{{ $app }}][{{ $feature }}]" value="1" @checked(old("features.{$app}.{$feature}", $featureAccess["{$app}.{$feature}"] ?? false))><span><strong>{{ $featureDefinition['name'] }}</strong><small>{{ $featureDefinition['description'] }}</small></span></label>@endforeach</div>
                 </article>

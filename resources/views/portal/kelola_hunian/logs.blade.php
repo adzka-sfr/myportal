@@ -18,10 +18,10 @@
 <section class="hn-panel">
     <form method="GET" action="{{ route('apps.hunian.logs') }}" class="hn-logfilter">
         <label>Kamar
-            <select name="room"><option value="">Semua kamar</option>@foreach($roomNumbers as $number)<option value="{{ $number }}" @selected(($filters['room'] ?? null) === $number)>{{ $number }}</option>@endforeach</select>
+            <select name="room" class="js-select2" data-allow-clear="1" data-placeholder="Semua kamar"><option value=""></option>@foreach($roomNumbers as $number)<option value="{{ $number }}" @selected(($filters['room'] ?? null) === $number)>{{ $number }}</option>@endforeach</select>
         </label>
         <label>Aktivitas
-            <select name="action"><option value="">Semua aktivitas</option>@foreach($actions as $value => $label)<option value="{{ $value }}" @selected(($filters['action'] ?? null) === $value)>{{ $label }}</option>@endforeach</select>
+            <select name="action" class="js-select2" data-allow-clear="1" data-placeholder="Semua aktivitas"><option value=""></option>@foreach($actions as $value => $label)<option value="{{ $value }}" @selected(($filters['action'] ?? null) === $value)>{{ $label }}</option>@endforeach</select>
         </label>
         <button class="button button-quiet button-small" type="submit">Terapkan</button>
         @if(! empty($filters['room']) || ! empty($filters['action']))<a class="text-button" href="{{ route('apps.hunian.logs') }}">Reset</a>@endif
@@ -51,4 +51,5 @@
         <div class="pagination-wrap">{{ $logs->links() }}</div>
     @endif
 </section>
+@include('portal.kelola_hunian._select2')
 @endsection

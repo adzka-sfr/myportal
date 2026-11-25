@@ -48,7 +48,7 @@
                                 <td class="align-right">
                                     <div class="row-actions">
                                         <button type="button" class="button button-quiet button-small" data-edit-room="{{ json_encode($payload) }}">Ubah</button>
-                                        <form method="POST" action="{{ route('apps.hunian.master.rooms.destroy', $room) }}" onsubmit="return confirm('Hapus kamar {{ addslashes($room->room_number) }}? Riwayat penghuninya ikut terhapus, log tetap tersimpan.')">@csrf @method('DELETE')<button type="submit" class="text-button danger-text">Hapus</button></form>
+                                        <form method="POST" action="{{ route('apps.hunian.master.rooms.destroy', $room) }}" onsubmit="return confirm('Hapus kamar {{ addslashes($room->room_number) }}? Riwayat penghuninya ikut terhapus, log dan data pembayaran tetap tersimpan.')">@csrf @method('DELETE')<button type="submit" class="text-button danger-text">Hapus</button></form>
                                     </div>
                                 </td>
                             </tr>

@@ -7,7 +7,12 @@ use App\Http\Controllers\Apps\FuelController;
 use App\Http\Controllers\Apps\HunianController;
 use App\Http\Controllers\Apps\HunianLogController;
 use App\Http\Controllers\Apps\HunianMasterController;
+use App\Http\Controllers\Apps\HunianPaymentController;
 use App\Http\Controllers\Apps\HunianResidentController;
+use App\Http\Controllers\Apps\HunianTenantController;
+use App\Http\Controllers\Apps\HunianTicketController;
+use App\Http\Controllers\Apps\PenyewaController;
+use App\Http\Controllers\Apps\PenyewaTicketController;
 use App\Http\Controllers\Apps\ShoppingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PortalController;
@@ -71,6 +76,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/rooms/{room}/maintenance', [HunianController::class, 'startMaintenance'])->name('.rooms.maintenance.start');
         Route::patch('/maintenance/{maintenance}/finish', [HunianController::class, 'finishMaintenance'])->name('.maintenance.finish');
 
+        // Verifikasi pembayaran
+        Route::get('/payments', [HunianPaymentController::class, 'index'])->name('.payments');
+        Route::patch('/payments/{payment}/match', [HunianPaymentController::class, 'match'])->name('.payments.match');
+        Route::get('/payments/{payment}/proof', [HunianPaymentController::class, 'proof'])->name('.payments.proof');
+        Route::delete('/payments/{payment}/proof', [HunianPaymentController::class, 'destroyProof'])->name('.payments.proof.destroy');
+
         // Master kamar & fasilitas
         Route::get('/master', [HunianMasterController::class, 'index'])->name('.master');
         Route::post('/master/rooms', [HunianMasterController::class, 'storeRoom'])->name('.master.rooms.store');
@@ -83,5 +94,34 @@ Route::middleware(['auth', 'active'])->group(function () {
         // Log aktivitas
         Route::get('/residents', [HunianResidentController::class, 'index'])->name('.residents');
         Route::get('/logs', [HunianLogController::class, 'index'])->name('.logs');
+
+        // Informasi penghuni (profil, KTP, status aktif)
+        Route::get('/tenants', [HunianTenantController::class, 'index'])->name('.tenants');
+        Route::post('/tenants', [HunianTenantController::class, 'store'])->name('.tenants.store');
+        Route::put('/tenants/{tenant}', [HunianTenantController::class, 'update'])->name('.tenants.update');
+        Route::patch('/tenants/{tenant}/active', [HunianTenantController::class, 'toggleActive'])->name('.tenants.active');
+        Route::delete('/tenants/{tenant}', [HunianTenantController::class, 'destroy'])->name('.tenants.destroy');
+        Route::get('/tenants/{tenant}/ktp', [HunianTenantController::class, 'ktp'])->name('.tenants.ktp');
+
+        // Keluhan penghuni
+        Route::get('/tickets', [HunianTicketController::class, 'index'])->name('.tickets');
+        Route::get('/tickets/{ticket}', [HunianTicketController::class, 'show'])->name('.tickets.show');
+        Route::post('/tickets/{ticket}/messages', [HunianTicketController::class, 'reply'])->middleware('throttle:hunian-chat')->name('.tickets.reply');
+        Route::patch('/tickets/{ticket}/status', [HunianTicketController::class, 'updateStatus'])->name('.tickets.status');
+        Route::get('/tickets/messages/{message}/image', [HunianTicketController::class, 'image'])->name('.tickets.image');
+    });
+
+    // Aplikasi untuk penghuni terdaftar: semua data dibatasi ke penghuni yang sedang login.
+    Route::prefix('apps/penyewa')->name('apps.penyewa')->middleware('tenant')->group(function () {
+        Route::get('/', [PenyewaController::class, 'home'])->name('');
+        Route::get('/pembayaran', [PenyewaController::class, 'payments'])->name('.payments');
+        Route::get('/profil', [PenyewaController::class, 'profile'])->name('.profile');
+        Route::put('/profil/kata-sandi', [PenyewaController::class, 'updatePassword'])->middleware('throttle:hunian-password')->name('.password');
+
+        Route::get('/keluhan', [PenyewaTicketController::class, 'index'])->name('.tickets');
+        Route::post('/keluhan', [PenyewaTicketController::class, 'store'])->middleware('throttle:hunian-ticket')->name('.tickets.store');
+        Route::get('/keluhan/{ticket}', [PenyewaTicketController::class, 'show'])->name('.tickets.show');
+        Route::post('/keluhan/{ticket}/pesan', [PenyewaTicketController::class, 'reply'])->middleware('throttle:hunian-chat')->name('.tickets.reply');
+        Route::get('/keluhan/pesan/{message}/foto', [PenyewaTicketController::class, 'image'])->name('.tickets.image');
     });
 });

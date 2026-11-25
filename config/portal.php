@@ -50,5 +50,13 @@ return [
             'superadmin_only' => true,
             'features' => [],
         ],
+        'penyewa' => [
+            'name' => 'Penyewa Hunian',
+            'description' => 'Info kamar, tenggat dan riwayat pembayaran, serta keluhan untuk penghuni.',
+            'icon' => '☺',
+            'route' => 'apps.penyewa',
+            'resident_only' => true,
+            'features' => [],
+        ],
     ],
 ];

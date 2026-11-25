@@ -7,8 +7,8 @@ use App\Console\Commands\MakeSuperadmin;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withCommands([MakeSuperadmin::class])
@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'superadmin' => \App\Http\Middleware\EnsureSuperadmin::class,
             'application' => \App\Http\Middleware\EnsureApplicationAccess::class,
             'feature' => \App\Http\Middleware\EnsureFeatureAccess::class,
+            'tenant' => \App\Http\Middleware\EnsureTenant::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -20,7 +20,7 @@
     <div class="hn-stat"><span>Kosong</span><strong>{{ $stats['available'] }}</strong><small>siap ditempati</small></div>
     <div class="hn-stat"><span>Dipesan / Perbaikan</span><strong>{{ $stats['reserved'] }} / {{ $stats['maintenance'] }}</strong><small>booking / maintenance</small></div>
     <div @class(['hn-stat', 'is-alert' => $stats['overdue'] > 0])><span>Sewa terlambat</span><strong>{{ $stats['overdue'] }}</strong><small>kamar lewat jatuh tempo</small></div>
-    <div class="hn-stat"><span>Pendapatan / bulan</span><strong>Rp {{ number_format($stats['income'], 0, ',', '.') }}</strong><small>potensi kamar kosong Rp {{ number_format($stats['potential'], 0, ',', '.') }}</small></div>
+    <div class="hn-stat"><span>Pemasukan bulan ini</span><strong>Rp {{ number_format($stats['income'], 0, ',', '.') }}</strong><small><a href="{{ route('apps.hunian.payments') }}">{{ $stats['pending_count'] }} pembayaran (Rp {{ number_format($stats['pending_amount'], 0, ',', '.') }}) menunggu verifikasi</a></small></div>
 </section>
 
 <div class="hn-toolbar">
@@ -49,6 +49,7 @@
                                 'id' => $occ->id,
                                 'status' => $occ->status,
                                 'room_number' => $room->room_number,
+                                'tenant_id' => $occ->tenant_id,
                                 'occupant_name' => $occ->occupant_name,
                                 'occupant_phone' => $occ->occupant_phone,
                                 'check_in_date' => $occ->check_in_date?->format('Y-m-d'),
@@ -110,7 +111,7 @@
                                         <form method="POST" action="{{ route('apps.hunian.occupancies.end', $occ) }}" onsubmit="return confirm('Batalkan booking kamar {{ addslashes($room->room_number) }}?')">@csrf @method('PATCH')<button type="submit" class="text-button danger-text">Batalkan</button></form>
                                         @break
                                     @case('occupied')
-                                        <button type="button" class="button button-primary button-small" data-pay="{{ json_encode(['id' => $occ->id, 'room_number' => $room->room_number, 'rent_price' => $occ->rent_price, 'paid_until_label' => $occ->paid_until?->format('d M Y'), 'name' => $occ->occupant_name]) }}">Catat bayar</button>
+                                        <button type="button" class="button button-primary button-small" data-pay="{{ json_encode(['id' => $occ->id, 'room_number' => $room->room_number, 'rent_price' => $occ->rent_price, 'paid_until_label' => $occ->paid_until?->format('d M Y'), 'paid_until' => $occ->paid_until?->format('Y-m-d'), 'check_in_date' => $occ->check_in_date?->format('Y-m-d'), 'name' => $occ->occupant_name]) }}">Catat bayar</button>
                                         <button type="button" class="button button-quiet button-small" data-edit-occupancy="{{ json_encode($occPayload) }}">Ubah</button>
                                         <form method="POST" action="{{ route('apps.hunian.occupancies.end', $occ) }}" onsubmit="return confirm('Check-out {{ addslashes($occ->occupant_name) }} dari kamar {{ addslashes($room->room_number) }}?')">@csrf @method('PATCH')<button type="submit" class="text-button danger-text">Check-out</button></form>
                                         @break
@@ -136,145 +137,6 @@
 
 @include('portal.kelola_hunian._modals')
 
-<script>
-(function () {
-    var today = @json(now()->toDateString());
-    var urls = {
-        occupy: @json(route('apps.hunian.rooms.occupy', ['room' => '__ID__'])),
-        'occupancy-edit': @json(route('apps.hunian.occupancies.update', ['occupancy' => '__ID__'])),
-        pay: @json(route('apps.hunian.occupancies.pay', ['occupancy' => '__ID__'])),
-        maintenance: @json(route('apps.hunian.rooms.maintenance.start', ['room' => '__ID__'])),
-    };
-    var d = {
-        occupancy: document.getElementById('occupancy-dialog'),
-        pay: document.getElementById('pay-dialog'),
-        maintenance: document.getElementById('maintenance-dialog'),
-    };
-    var of = document.getElementById('occupancy-form');
-    var mode = document.getElementById('occupancy-mode');
-    var modeWrap = document.getElementById('occupancy-mode-wrap');
-    var activeFlag = document.getElementById('occupancy-active');
-    var method = document.getElementById('occupancy-method');
-
-    function url(type, id) { return urls[type].replace('__ID__', id); }
-
-    function syncMode() {
-        var isActive = mode.disabled || mode.value === 'active';
-        of.querySelectorAll('[data-active-only]').forEach(function (el) { el.hidden = !isActive; });
-    }
-
-    function lockMode(locked) {
-        activeFlag.value = locked ? '1' : '';
-        mode.disabled = locked;
-        modeWrap.hidden = locked;
-        syncMode();
-    }
-
-    function openOccupy(p) {
-        of.action = url('occupy', p.id);
-        method.disabled = true;
-        document.getElementById('occupancy-dialog-type').value = 'occupy';
-        document.getElementById('occupancy-target').value = p.id;
-        document.getElementById('occupancy-title').textContent = (p.mode === 'reserved' ? 'Booking kamar ' : 'Check-in kamar ') + p.room_number;
-        of.occupant_name.value = ''; of.occupant_phone.value = ''; of.notes.value = '';
-        of.check_in_date.value = p.mode === 'active' ? today : '';
-        of.paid_until.value = '';
-        of.rent_price.value = p.price;
-        mode.value = p.mode;
-        lockMode(false);
-        d.occupancy.showModal();
-    }
-
-    function openEdit(p) {
-        of.action = url('occupancy-edit', p.id);
-        method.disabled = false;
-        document.getElementById('occupancy-dialog-type').value = 'occupancy-edit';
-        document.getElementById('occupancy-target').value = p.id;
-        document.getElementById('occupancy-title').textContent = (p.activate ? 'Check-in booking kamar ' : 'Ubah penghuni kamar ') + p.room_number;
-        of.occupant_name.value = p.occupant_name || ''; of.occupant_phone.value = p.occupant_phone || ''; of.notes.value = p.notes || '';
-        of.check_in_date.value = p.activate ? today : (p.check_in_date || '');
-        of.paid_until.value = p.paid_until || '';
-        of.rent_price.value = p.rent_price;
-        mode.value = p.activate ? 'active' : p.status;
-        lockMode(p.status === 'active');
-        d.occupancy.showModal();
-    }
-
-    function openPay(p) {
-        var f = document.getElementById('pay-form');
-        f.action = url('pay', p.id);
-        document.getElementById('pay-target').value = p.id;
-        document.getElementById('pay-title').textContent = 'Pembayaran kamar ' + p.room_number;
-        document.getElementById('pay-info').textContent = p.name + ' · terbayar sampai ' + (p.paid_until_label || 'belum ada tanggal');
-        f.months.value = 1; f.amount.value = '';
-        d.pay.showModal();
-    }
-
-    function openMaintenance(p) {
-        var f = document.getElementById('maintenance-form');
-        f.action = url('maintenance', p.id);
-        document.getElementById('maintenance-target').value = p.id;
-        document.getElementById('maintenance-title').textContent = 'Perbaikan kamar ' + p.room_number;
-        f.reason.value = '';
-        d.maintenance.showModal();
-    }
-
-    function bind(attr, fn) {
-        document.querySelectorAll('[' + attr + ']').forEach(function (btn) {
-            btn.addEventListener('click', function () { fn(JSON.parse(btn.getAttribute(attr))); });
-        });
-    }
-    bind('data-occupy', openOccupy);
-    bind('data-edit-occupancy', openEdit);
-    bind('data-pay', function (p) { if (p.id) openPay(p); });
-    bind('data-maintenance', openMaintenance);
-
-    document.querySelectorAll('[data-close-dialog]').forEach(function (btn) {
-        btn.addEventListener('click', function () { btn.closest('dialog').close(); });
-    });
-    Object.keys(d).forEach(function (k) {
-        d[k].addEventListener('click', function (e) { if (e.target === d[k]) d[k].close(); });
-    });
-    mode.addEventListener('change', syncMode);
-
-    // Buka kembali dialog beserta isian lama saat validasi gagal.
-    @if($errors->any() && old('_target'))
-        (function () {
-            var type = @json(old('_dialog')), id = @json(old('_target'));
-            if (type === 'occupy' || type === 'occupancy-edit') {
-                of.action = url(type, id);
-                method.disabled = type === 'occupy';
-                document.getElementById('occupancy-title').textContent = type === 'occupy' ? 'Penghuni kamar' : 'Ubah penghuni';
-                lockMode(activeFlag.value === '1');
-                d.occupancy.showModal();
-            } else if (type === 'pay') {
-                document.getElementById('pay-form').action = url('pay', id);
-                d.pay.showModal();
-            } else if (type === 'maintenance') {
-                document.getElementById('maintenance-form').action = url('maintenance', id);
-                d.maintenance.showModal();
-            }
-        })();
-    @else
-        syncMode();
-    @endif
-
-    var filters = document.querySelectorAll('[data-filter]');
-    filters.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var f = btn.dataset.filter, visible = 0;
-            filters.forEach(function (b) { b.classList.toggle('is-active', b === btn); });
-            document.querySelectorAll('[data-room]').forEach(function (card) {
-                var show = f === 'all' || card.dataset.status === f || (f === 'overdue' && card.dataset.paystate === 'overdue');
-                card.hidden = !show;
-                if (show) visible++;
-            });
-            document.querySelectorAll('[data-floor-section]').forEach(function (sec) {
-                sec.hidden = !sec.querySelector('[data-room]:not([hidden])');
-            });
-            document.getElementById('hn-no-match').hidden = visible > 0;
-        });
-    });
-})();
-</script>
+@include('portal.kelola_hunian._select2')
+@include('portal.kelola_hunian._script')
 @endsection

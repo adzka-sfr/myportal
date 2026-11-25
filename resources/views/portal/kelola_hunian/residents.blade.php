@@ -25,10 +25,10 @@
     <form method="GET" action="{{ route('apps.hunian.residents') }}" class="hn-logfilter">
         <label>Nama penghuni<input type="search" name="q" value="{{ $filters['q'] ?? '' }}" maxlength="120" placeholder="Cari nama…" style="font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff"></label>
         <label>Kamar
-            <select name="room"><option value="">Semua kamar</option>@foreach($rooms as $room)<option value="{{ $room->id }}" @selected((int) ($filters['room'] ?? 0) === $room->id)>{{ $room->room_number }}</option>@endforeach</select>
+            <select name="room" class="js-select2" data-allow-clear="1" data-placeholder="Semua kamar"><option value=""></option>@foreach($rooms as $room)<option value="{{ $room->id }}" @selected((int) ($filters['room'] ?? 0) === $room->id)>{{ $room->room_number }}</option>@endforeach</select>
         </label>
         <label>Status
-            <select name="status"><option value="">Semua status</option>@foreach($statuses as $value => $label)<option value="{{ $value }}" @selected(($filters['status'] ?? null) === $value)>{{ $label }}</option>@endforeach</select>
+            <select name="status" class="js-select2" data-allow-clear="1" data-placeholder="Semua status"><option value=""></option>@foreach($statuses as $value => $label)<option value="{{ $value }}" @selected(($filters['status'] ?? null) === $value)>{{ $label }}</option>@endforeach</select>
         </label>
         <button class="button button-quiet button-small" type="submit">Terapkan</button>
         @if(array_filter($filters))<a class="text-button" href="{{ route('apps.hunian.residents') }}">Reset</a>@endif
@@ -68,4 +68,5 @@
         <div class="pagination-wrap">{{ $residents->links() }}</div>
     @endif
 </section>
+@include('portal.kelola_hunian._select2')
 @endsection
